@@ -65,8 +65,17 @@ public class Kilo {
         System.out.write(new byte[]{0x1b, '[', 'H'});
     }
 
+    static void editorDrawRows() throws IOException {
+        for (int y = 0; y < 24; y++) {
+            System.out.write("~".getBytes());
+            System.out.write(new byte[]{'\r', '\n'});
+        }
+    }
+
     static void editorRefreshScreen() throws IOException {
         editorClearScreen();
+        editorDrawRows();
+        System.out.write(new byte[]{0x1b, '[', 'H'});
     }
 
 
