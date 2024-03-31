@@ -1,12 +1,11 @@
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class Kilo {
     static String enableRawMode() throws IOException {
         var currentSettings = exec("/usr/bin/env", "stty", "-g");
         exec("/usr/bin/env", "stty", "-echo");
+        exec("/usr/bin/env", "stty", "raw");
         return currentSettings;
     }
 
@@ -35,15 +34,25 @@ public class Kilo {
     public static void main(String[] args) {
         System.err.println("Kilo, Kilo, Kilo");
 
-        var stdin = new BufferedReader(new InputStreamReader(System.in));
-        String line;
+        var buf = new byte[1024];
         String currentSettings = null;
         try {
             currentSettings = enableRawMode();
-            while ((line = stdin.readLine()) != null) {
-                System.err.println(line);
-                if (line.equals("q")) {
+            MAIN:while (true) {
+                if (System.in.available() == 0) {
+                    Thread.sleep(100);
+                    continue;
+                }
+                var readByte = System.in.read(buf);
+                if (readByte == -1) {
                     break;
+                }
+                for (int i = 0; i < readByte; i++) {
+                    var b = buf[i];
+                    System.err.println(b);
+                    if (b == (byte)'q') {
+                        break MAIN;
+                    }
                 }
             }
         } catch (Exception e) {
