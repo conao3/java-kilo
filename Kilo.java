@@ -93,15 +93,11 @@ public class Kilo {
         System.out.write(new byte[]{0x1b, '[', 'H'});
     }
 
-    static void editorClearScreen(KiloArrayList ab) throws IOException {
-        ab.extend("\u001b[2J".getBytes());
-        ab.extend("\u001b[H".getBytes());
-    }
-
     static void editorDrawRows(KiloArrayList ab) throws IOException {
         for (int y = 0; y < screenrows; y++) {
             ab.extend("~".getBytes());
 
+            ab.extend("\u001b[K".getBytes());
             if (y >= screenrows - 1) {
                 continue;
             }
@@ -111,9 +107,12 @@ public class Kilo {
 
     static void editorRefreshScreen() throws IOException {
         var ab = new KiloArrayList();
-        editorClearScreen(ab);
+
+        ab.extend("\u001b[?25l".getBytes());
+        ab.extend("\u001b[H".getBytes());
         editorDrawRows(ab);
         ab.extend("\u001b[H".getBytes());
+        ab.extend("\u001b[?25h".getBytes());
         System.out.write(ab.toPrimitive());
     }
 
