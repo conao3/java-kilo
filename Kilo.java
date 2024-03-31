@@ -2,6 +2,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class Kilo {
+    static byte ctrlKey(char key) {
+        return (byte)(key & 0x1f);
+    }
+
     static String enableRawMode() throws IOException {
         var currentSettings = exec("/usr/bin/env", "stty", "-g");
         exec("/usr/bin/env", "stty", "-brkint", "-icrnl", "-inpck", "-istrip", "-ixon");
@@ -56,7 +60,7 @@ public class Kilo {
                     var bStr = String.format("%d (%c)", b, b);
                     System.out.write(bStr.getBytes());
                     System.out.write(new byte[]{'\r', '\n'});
-                    if (b == (byte)'q') {
+                    if (b == ctrlKey('q')) {
                         break MAIN;
                     }
                 }
