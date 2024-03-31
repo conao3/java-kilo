@@ -1,5 +1,6 @@
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class Kilo {
     static int screenrows;
@@ -61,6 +62,11 @@ public class Kilo {
         return buf[0];
     }
 
+    static int[] getWindowSize() throws IOException {
+        var output = exec("/usr/bin/env", "stty", "size");
+        return Arrays.stream(output.split(" ")).mapToInt(Integer::parseInt).toArray();
+    }
+
 
     /*** output ***/
 
@@ -103,9 +109,10 @@ public class Kilo {
 
     /*** init ***/
 
-    static void initEditor() {
-        screenrows = 24;
-        screencols = 80;
+    static void initEditor() throws IOException {
+        var size = getWindowSize();
+        screenrows = size[0];
+        screencols = size[1];
     }
 
     public static void main(String[] args) {
