@@ -58,6 +58,18 @@ public class Kilo {
     }
 
 
+    /*** output ***/
+
+    static void editorClearScreen() throws IOException {
+        System.out.write(new byte[]{0x1b, '[', '2', 'J'});
+        System.out.write(new byte[]{0x1b, '[', 'H'});
+    }
+
+    static void editorRefreshScreen() throws IOException {
+        editorClearScreen();
+    }
+
+
     /*** input ***/
 
     static int editorProcessKeyPress() throws IOException, InterruptedException {
@@ -69,6 +81,7 @@ public class Kilo {
         System.out.write(bStr.getBytes());
         System.out.write(new byte[]{'\r', '\n'});
         if (b == ctrlKey('q')) {
+            editorClearScreen();
             return -1;
         }
         return 0;
@@ -84,11 +97,15 @@ public class Kilo {
         try {
             currentSettings = enableRawMode();
             while (true) {
+                editorRefreshScreen();
                 if (editorProcessKeyPress() == -1) {
                     break;
                 }
             }
         } catch (Exception e) {
+            try {
+                editorClearScreen();
+            } catch (IOException _e) {}
             e.printStackTrace();
         } finally {
             try {
