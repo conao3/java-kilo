@@ -2,9 +2,29 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class Kilo {
+    /*** utils ***/
+
     static byte ctrlKey(char key) {
         return (byte)(key & 0x1f);
     }
+
+    static String exec(String... cmd) throws IOException {
+        var pb = new ProcessBuilder(cmd);
+        pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
+
+        var process = pb.start();
+        var stdoutBuffer = new ByteArrayOutputStream();
+        var stdout = process.getInputStream();
+        var readByte = stdout.read();
+        while (readByte != -1) {
+            stdoutBuffer.write(readByte);
+            readByte = stdout.read();
+        }
+        return stdoutBuffer.toString().trim();
+    }
+
+
+    /*** terminal ***/
 
     static String enableRawMode() throws IOException {
         var currentSettings = exec("/usr/bin/env", "stty", "-g");
@@ -37,6 +57,9 @@ public class Kilo {
         return buf[0];
     }
 
+
+    /*** input ***/
+
     static int editorProcessKeyPress() throws IOException, InterruptedException {
         var b = editorReadKey();
         if (b == 0 || b == -1) {
@@ -51,20 +74,8 @@ public class Kilo {
         return 0;
     }
 
-    static String exec(String... cmd) throws IOException {
-        var pb = new ProcessBuilder(cmd);
-        pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
 
-        var process = pb.start();
-        var stdoutBuffer = new ByteArrayOutputStream();
-        var stdout = process.getInputStream();
-        var readByte = stdout.read();
-        while (readByte != -1) {
-            stdoutBuffer.write(readByte);
-            readByte = stdout.read();
-        }
-        return stdoutBuffer.toString().trim();
-    }
+    /*** init ***/
 
     public static void main(String[] args) {
         System.err.println("Kilo, Kilo, Kilo");
