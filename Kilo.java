@@ -78,6 +78,10 @@ public class Kilo {
     static void editorDrawRows() throws IOException {
         for (int y = 0; y < screenrows; y++) {
             System.out.write("~".getBytes());
+
+            if (y >= screenrows - 1) {
+                continue;
+            }
             System.out.write(new byte[]{'\r', '\n'});
         }
     }
