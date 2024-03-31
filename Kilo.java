@@ -24,8 +24,8 @@ public class Kilo {
         exec("/usr/bin/env", "stty", currentSettings);
     }
 
-    static int editorProcessKeyPress() throws IOException, InterruptedException {
-        var buf = new byte[1024];
+    static byte editorReadKey() throws IOException, InterruptedException {
+        var buf = new byte[1];
         if (System.in.available() == 0) {
             Thread.sleep(100);
             return 0;
@@ -34,14 +34,19 @@ public class Kilo {
         if (readByte == -1) {
             return -1;
         }
-        for (int i = 0; i < readByte; i++) {
-            var b = buf[i];
-            var bStr = String.format("%d (%c)", b, b);
-            System.out.write(bStr.getBytes());
-            System.out.write(new byte[]{'\r', '\n'});
-            if (b == ctrlKey('q')) {
-                return -1;
-            }
+        return buf[0];
+    }
+
+    static int editorProcessKeyPress() throws IOException, InterruptedException {
+        var b = editorReadKey();
+        if (b == 0 || b == -1) {
+            return b;
+        }
+        var bStr = String.format("%d (%c)", b, b);
+        System.out.write(bStr.getBytes());
+        System.out.write(new byte[]{'\r', '\n'});
+        if (b == ctrlKey('q')) {
+            return -1;
         }
         return 0;
     }
