@@ -4,8 +4,12 @@ import java.io.IOException;
 public class Kilo {
     static String enableRawMode() throws IOException {
         var currentSettings = exec("/usr/bin/env", "stty", "-g");
-        exec("/usr/bin/env", "stty", "-echo");
-        exec("/usr/bin/env", "stty", "raw");
+        exec("/usr/bin/env", "stty", "-brkint", "-icrnl", "-inpck", "-istrip", "-ixon");
+        exec("/usr/bin/env", "stty", "-opost");
+        exec("/usr/bin/env", "stty", "cs8");
+        exec("/usr/bin/env", "stty", "-echo", "-icanon", "-iexten", "-isig");
+        exec("/usr/bin/env", "stty", "min", "0");
+        exec("/usr/bin/env", "stty", "time", "1");
         return currentSettings;
     }
 
