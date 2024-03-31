@@ -49,7 +49,9 @@ public class Kilo {
                 }
                 for (int i = 0; i < readByte; i++) {
                     var b = buf[i];
-                    System.err.println(b);
+                    var bStr = String.format("%d (%c)", b, b);
+                    System.out.write(bStr.getBytes());
+                    System.out.write(new byte[]{'\r', '\n'});
                     if (b == (byte)'q') {
                         break MAIN;
                     }
