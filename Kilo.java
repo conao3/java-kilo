@@ -1,6 +1,24 @@
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+
+
+class KiloArrayList extends ArrayList<Byte> {
+    public void extend(byte[] bytes) {
+        for (var b : bytes) {
+            this.add(b);
+        }
+    }
+
+    public byte[] toPrimitive() {
+        var bytes = new byte[this.size()];
+        for (int i = 0; i < this.size(); i++) {
+            bytes[i] = this.get(i);
+        }
+        return bytes;
+    }
+}
 
 public class Kilo {
     static int screenrows;
@@ -70,26 +88,33 @@ public class Kilo {
 
     /*** output ***/
 
-    static void editorClearScreen() throws IOException {
+    static void editorClearScreenDirect() throws IOException {
         System.out.write(new byte[]{0x1b, '[', '2', 'J'});
         System.out.write(new byte[]{0x1b, '[', 'H'});
     }
 
-    static void editorDrawRows() throws IOException {
+    static void editorClearScreen(KiloArrayList ab) throws IOException {
+        ab.extend("\u001b[2J".getBytes());
+        ab.extend("\u001b[H".getBytes());
+    }
+
+    static void editorDrawRows(KiloArrayList ab) throws IOException {
         for (int y = 0; y < screenrows; y++) {
-            System.out.write("~".getBytes());
+            ab.extend("~".getBytes());
 
             if (y >= screenrows - 1) {
                 continue;
             }
-            System.out.write(new byte[]{'\r', '\n'});
+            ab.extend("\r\n".getBytes());
         }
     }
 
     static void editorRefreshScreen() throws IOException {
-        editorClearScreen();
-        editorDrawRows();
-        System.out.write(new byte[]{0x1b, '[', 'H'});
+        var ab = new KiloArrayList();
+        editorClearScreen(ab);
+        editorDrawRows(ab);
+        ab.extend("\u001b[H".getBytes());
+        System.out.write(ab.toPrimitive());
     }
 
 
@@ -104,7 +129,7 @@ public class Kilo {
         System.out.write(bStr.getBytes());
         System.out.write(new byte[]{'\r', '\n'});
         if (b == ctrlKey('q')) {
-            editorClearScreen();
+            editorClearScreenDirect();
             return -1;
         }
         return 0;
@@ -134,7 +159,7 @@ public class Kilo {
             }
         } catch (Exception e) {
             try {
-                editorClearScreen();
+                editorClearScreenDirect();
             } catch (IOException _e) {}
             e.printStackTrace();
         } finally {
