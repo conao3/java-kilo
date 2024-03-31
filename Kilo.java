@@ -24,6 +24,28 @@ public class Kilo {
         exec("/usr/bin/env", "stty", currentSettings);
     }
 
+    static int editorProcessKeyPress() throws IOException, InterruptedException {
+        var buf = new byte[1024];
+        if (System.in.available() == 0) {
+            Thread.sleep(100);
+            return 0;
+        }
+        var readByte = System.in.read(buf);
+        if (readByte == -1) {
+            return -1;
+        }
+        for (int i = 0; i < readByte; i++) {
+            var b = buf[i];
+            var bStr = String.format("%d (%c)", b, b);
+            System.out.write(bStr.getBytes());
+            System.out.write(new byte[]{'\r', '\n'});
+            if (b == ctrlKey('q')) {
+                return -1;
+            }
+        }
+        return 0;
+    }
+
     static String exec(String... cmd) throws IOException {
         var pb = new ProcessBuilder(cmd);
         pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
@@ -42,27 +64,12 @@ public class Kilo {
     public static void main(String[] args) {
         System.err.println("Kilo, Kilo, Kilo");
 
-        var buf = new byte[1024];
         String currentSettings = null;
         try {
             currentSettings = enableRawMode();
-            MAIN:while (true) {
-                if (System.in.available() == 0) {
-                    Thread.sleep(100);
-                    continue;
-                }
-                var readByte = System.in.read(buf);
-                if (readByte == -1) {
+            while (true) {
+                if (editorProcessKeyPress() == -1) {
                     break;
-                }
-                for (int i = 0; i < readByte; i++) {
-                    var b = buf[i];
-                    var bStr = String.format("%d (%c)", b, b);
-                    System.out.write(bStr.getBytes());
-                    System.out.write(new byte[]{'\r', '\n'});
-                    if (b == ctrlKey('q')) {
-                        break MAIN;
-                    }
                 }
             }
         } catch (Exception e) {
