@@ -2,6 +2,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class Kilo {
+    static int screenrows;
+    static int screencols;
+
+
     /*** utils ***/
 
     static byte ctrlKey(char key) {
@@ -66,7 +70,7 @@ public class Kilo {
     }
 
     static void editorDrawRows() throws IOException {
-        for (int y = 0; y < 24; y++) {
+        for (int y = 0; y < screenrows; y++) {
             System.out.write("~".getBytes());
             System.out.write(new byte[]{'\r', '\n'});
         }
@@ -99,12 +103,18 @@ public class Kilo {
 
     /*** init ***/
 
+    static void initEditor() {
+        screenrows = 24;
+        screencols = 80;
+    }
+
     public static void main(String[] args) {
         System.err.println("Kilo, Kilo, Kilo");
 
         String currentSettings = null;
         try {
             currentSettings = enableRawMode();
+            initEditor();
             while (true) {
                 editorRefreshScreen();
                 if (editorProcessKeyPress() == -1) {
