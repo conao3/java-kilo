@@ -4,6 +4,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class Kilo {
+    static String enableRawMode() throws IOException {
+        var currentSettings = exec("/usr/bin/env", "stty", "-g");
+        exec("/usr/bin/env", "stty", "-echo");
+        return currentSettings;
+    }
+
+    static void disableRawMode(String currentSettings) throws IOException {
+        if (currentSettings == null) {
+            return;
+        }
+        exec("/usr/bin/env", "stty", currentSettings);
+    }
+
     static String exec(String... cmd) throws IOException {
         var pb = new ProcessBuilder(cmd);
         pb.redirectInput(ProcessBuilder.Redirect.INHERIT);
@@ -26,9 +39,7 @@ public class Kilo {
         String line;
         String currentSettings = null;
         try {
-            currentSettings = exec("/usr/bin/env", "stty", "-g");
-            exec("/usr/bin/env", "stty", "-icanon", "-echo");
-            System.err.println(currentSettings);
+            currentSettings = enableRawMode();
             while ((line = stdin.readLine()) != null) {
                 System.err.println(line);
                 if (line.equals("q")) {
@@ -37,13 +48,9 @@ public class Kilo {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
         } finally {
             try {
-                if (currentSettings != null) {
-                    System.err.println(currentSettings);
-                    exec("/usr/bin/env", "stty", currentSettings);
-                }
+                disableRawMode(currentSettings);
             } catch (IOException e) {
                 e.printStackTrace();
                 System.exit(1);
