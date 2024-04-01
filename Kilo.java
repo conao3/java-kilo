@@ -21,6 +21,7 @@ class KiloArrayList extends ArrayList<Byte> {
 }
 
 public class Kilo {
+    static final String KILO_VERSION = "0.0.1";
     static int screenrows;
     static int screencols;
 
@@ -95,7 +96,18 @@ public class Kilo {
 
     static void editorDrawRows(KiloArrayList ab) throws IOException {
         for (int y = 0; y < screenrows; y++) {
-            ab.extend("~".getBytes());
+            if (y == screenrows / 3) {
+                var welcome = String.format("Kilo editor -- version %s", KILO_VERSION);
+                int padding = (screencols - welcome.length()) / 2;
+                if (padding > 0) {
+                    ab.extend("~".getBytes());
+                    padding--;
+                }
+                ab.extend(" ".repeat(padding).getBytes());
+                ab.extend(welcome.getBytes());
+            } else {
+                ab.extend("~".getBytes());
+            }
 
             ab.extend("\u001b[K".getBytes());
             if (y >= screenrows - 1) {
