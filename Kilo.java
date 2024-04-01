@@ -24,6 +24,8 @@ public class Kilo {
     static final String KILO_VERSION = "0.0.1";
     static int screenrows;
     static int screencols;
+    static int cx = 0;
+    static int cy = 0;
 
 
     /*** utils ***/
@@ -123,13 +125,30 @@ public class Kilo {
         ab.extend("\u001b[?25l".getBytes());
         ab.extend("\u001b[H".getBytes());
         editorDrawRows(ab);
-        ab.extend("\u001b[H".getBytes());
+        ab.extend(String.format("\u001b[%d;%dH", cy + 1, cx + 1).getBytes());
         ab.extend("\u001b[?25h".getBytes());
         System.out.write(ab.toPrimitive());
     }
 
 
     /*** input ***/
+
+    static void editorMoveCursor(byte key) {
+        switch (key) {
+            case 'w':
+                cy--;
+                break;
+            case 's':
+                cy++;
+                break;
+            case 'a':
+                cx--;
+                break;
+            case 'd':
+                cx++;
+                break;
+        }
+    }
 
     static int editorProcessKeyPress() throws IOException, InterruptedException {
         var b = editorReadKey();
@@ -142,6 +161,9 @@ public class Kilo {
         if (b == ctrlKey('q')) {
             editorClearScreenDirect();
             return -1;
+        }
+        if (b == 'w' || b == 's' || b == 'a' || b == 'd') {
+            editorMoveCursor(b);
         }
         return 0;
     }
