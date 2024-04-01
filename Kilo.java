@@ -49,6 +49,17 @@ public class Kilo {
         return stdoutBuffer.toString().trim();
     }
 
+    static int read(byte[] buf) throws IOException {
+        if (System.in.available() == 0) {
+            return 0;
+        }
+        var readByte = System.in.read(buf);
+        if (readByte == -1) {
+            return -1;
+        }
+        return 1;
+    }
+
 
     /*** terminal ***/
 
@@ -72,15 +83,41 @@ public class Kilo {
 
     static byte editorReadKey() throws IOException, InterruptedException {
         var buf = new byte[1];
-        if (System.in.available() == 0) {
-            Thread.sleep(100);
-            return 0;
+        while (true) {
+            var ret = read(buf);
+            if (ret == -1) {
+                return -1;
+            }
+            if (ret == 1) {
+                break;
+            }
         }
-        var readByte = System.in.read(buf);
-        if (readByte == -1) {
-            return -1;
+        if (buf[0] == 0x1b) {
+            var buf0 = new byte[1];
+            var buf1 = new byte[1];
+            // var buf2 = new byte[1];
+            if (read(buf0) != 1) {
+                return buf[0];
+            }
+            if (read(buf1) != 1) {
+                return buf[0];
+            }
+            if (buf0[0] == '[') {
+                switch (buf1[0]) {
+                    case 'A':
+                        return 'w';
+                    case 'B':
+                        return 's';
+                    case 'C':
+                        return 'd';
+                    case 'D':
+                        return 'a';
+                }
+            }
+            return buf[0];
+        } else {
+            return buf[0];
         }
-        return buf[0];
     }
 
     static int[] getWindowSize() throws IOException {
